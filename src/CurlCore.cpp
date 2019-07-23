@@ -2,7 +2,6 @@
 #include <sstream>
 #include "string.h"
 #include <iostream>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -10,8 +9,6 @@
 #define ENABLE_HTTPS
 
 static std::string readBuffer;
-
-
 
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
 { 
