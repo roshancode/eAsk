@@ -10,32 +10,27 @@
 
 static std::string readBuffer;
 
-static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
-{ 
+static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp){ 
     size_t realsize = size * nmemb;
     readBuffer.append((const char*)contents, realsize);
     return realsize;
 }
 
 
-CurlCore::CurlCore()
-{
+CurlCore::CurlCore(){
 	Init();
 }
 
-CurlCore::~CurlCore()
-{
+CurlCore::~CurlCore(){
 	curl_easy_cleanup(m_pCurl);
 }
 
 
-void CurlCore::Init()
-{
+void CurlCore::Init(){
 	m_pCurl = curl_easy_init();
 }
 
-bool CurlCore::VerifyUser(const string& sAuthUri, const string &sUserName, const string &sUserRepo, string &sTTL, string sCertificatePath)
-{
+bool CurlCore::VerifyUser(const string& sAuthUri, const string &sUserName, const string &sUserRepo, string &sTTL, string sCertificatePath){
 	CURLcode res;
 	string sUri = sAuthUri + "/" + sUserName;
 
@@ -43,8 +38,7 @@ bool CurlCore::VerifyUser(const string& sAuthUri, const string &sUserName, const
 		sUri += "/"+sUserRepo+"/releases";
 
 	//printf("Req URI: "<<sUri<<endl;
-	if(m_pCurl)
-	{
+	if(m_pCurl){
 		curl_easy_setopt(m_pCurl, CURLOPT_URL, sUri.c_str());
 		/* example.com is redirected, so we tell libcurl to follow redirection */ 
 		curl_easy_setopt(m_pCurl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -53,15 +47,13 @@ bool CurlCore::VerifyUser(const string& sAuthUri, const string &sUserName, const
 		string sUserAgent = "CeasyCurl (sharma) v1.0";
 		curl_easy_setopt(m_pCurl, CURLOPT_USERAGENT, sUserAgent.c_str());
 
-		if(sCertificatePath == "")
-		{
+		if(sCertificatePath == ""){
 #ifdef ENABLE_HTTPS
 			curl_easy_setopt(m_pCurl, CURLOPT_SSL_VERIFYPEER, 0L);
 			curl_easy_setopt(m_pCurl, CURLOPT_SSL_VERIFYHOST, 0L);
 #endif
 		}
-		else
-		{
+		else{
 			curl_easy_setopt(m_pCurl, CURLOPT_SSL_VERIFYPEER, 1);
 			curl_easy_setopt(m_pCurl, CURLOPT_SSL_VERIFYHOST, 2);
 			curl_easy_setopt(m_pCurl, CURLOPT_CAINFO, sCertificatePath.c_str());
@@ -81,19 +73,17 @@ bool CurlCore::VerifyUser(const string& sAuthUri, const string &sUserName, const
 		  fprintf(stderr, "curl_easy_perform() failed: %s\n",
 		          curl_easy_strerror(res));
 
-		switch(respcode)
-		{
-			case 200:
-			{
+		switch(respcode){
+			case 200:{
 				// Parse the static string buffer readBuffer for username
 				vector<string> sValues;
 				printf("Your querry Succeeded :)\n");
 				ParseJsonData(readBuffer, sValues);
 
 				//for(int i=0;i<sValues.size();i++)
-				{
+				// {
 					//printf("Response Values = %s\n", sValues[i].c_str());
-				}
+				// }
 				readBuffer.clear();
 				return true;
 				break;	
@@ -115,8 +105,7 @@ bool CurlCore::VerifyUser(const string& sAuthUri, const string &sUserName, const
 	return false;
 }
 
-void CurlCore::ParseJsonData(string &sMsg, vector<string>& sParsedvalue)
-{
+void CurlCore::ParseJsonData(string &sMsg, vector<string>& sParsedvalue){
 	sParsedvalue.clear();
 
 	int iCount = 0;
@@ -130,8 +119,7 @@ void CurlCore::ParseJsonData(string &sMsg, vector<string>& sParsedvalue)
 			int lPos = sTemp.size();
 			string sAttr = sTemp.substr(0, sPos);
 
-			if(sTemp[sPos + 1] == '"')
-			{
+			if(sTemp[sPos + 1] == '"'){
 				sPos += 1;
 				lPos -= 1;
 			}
@@ -145,84 +133,70 @@ void CurlCore::ParseJsonData(string &sMsg, vector<string>& sParsedvalue)
 		iCount = 0;
 }
 
-void CurlCore::ShowInfo(string sAttr, string sData, int &iCount)
-{
-	
+void CurlCore::ShowInfo(string sAttr, string sData, int &iCount){
 
-	if(sAttr == "\"name\"" && iCount == 0)
-	{
+	if(sAttr == "\"name\"" && iCount == 0){
 		++iCount;
 		printf("Project Title:=> ");
 		printf(" %s\n", sData.c_str());
 	}
-	else if(sAttr == "\"name\"" && iCount == 1)
-	{
+	else if(sAttr == "\"name\"" && iCount == 1){
 		++iCount;
 		printf("Project Binary:=> ");
 		printf(" %s\n", sData.c_str());
 	}
-	else if(sAttr == "\"author\"")
-	{
+	else if(sAttr == "\"author\""){
 		printf("Creators' Login Name:=> ");
 
 		int sPos = sData.find(":");
 		int lPos = sData.size();
 		string sAttr1 = sData.substr(0, sPos);
 
-		if(sData[sPos + 1] == '"')
-		{
+		if(sData[sPos + 1] == '"'){
 			sPos += 1;
 			lPos -= 1;
 		}
 		sData = sData.substr(sPos+1, lPos - sPos - 1);
 		printf(" %s\n", sData.c_str());
 	}
-	else if(sAttr == "\"created_at\"")
-	{
+	else if(sAttr == "\"created_at\""){
 		printf("Create Date:=> ");
 		printf(" %s\n", sData.c_str());
 	}
-	else if(sAttr == "\"published_at\"")
-	{
+	else if(sAttr == "\"published_at\""){
 		printf("Publish Date:=> ");
 		printf(" %s\n", sData.c_str());
 	}
-	else if(sAttr == "\"uploader\"")
-	{
+	else if(sAttr == "\"uploader\""){
 		printf("Uploader Login Name:=> ");
 
 		int sPos = sData.find(":");
 		int lPos = sData.size();
 		string sAttr1 = sData.substr(0, sPos);
 
-		if(sData[sPos + 1] == '"')
-		{
+		if(sData[sPos + 1] == '"'){
 			sPos += 1;
 			lPos -= 1;
 		}
 		sData = sData.substr(sPos+1, lPos - sPos - 1);
 		printf(" %s\n", sData.c_str());
 	}
-	else if(sAttr == "\"type\"")
-	{
+	else if(sAttr == "\"type\""){
 		printf("User Privilege:=> ");
 		printf(" %s\n", sData.c_str());
 	}
-	else if(sAttr == "\"site_admin\"")
-	{
+	else if(sAttr == "\"site_admin\""){
 		printf("Are you an Admin for this site?:=> ");
 		if(sData == "false}")
 			printf("No\n");
 		else 
 			printf("No\n");
 	}
-	else if(sAttr == "\"content_type\"")
-	{
+	else if(sAttr == "\"content_type\""){
 		printf("Binary Package Type:=> ");
 		printf(" %s\n", sData.c_str());
 	}
-	else if(sAttr == "\"download_count\"")
-	{
+	else if(sAttr == "\"download_count\""){
 		string sTotal = "|Downloaded: "+ sData + " times|";
 
 		for(int i=0;i<sTotal.size();i++)
@@ -234,13 +208,11 @@ void CurlCore::ShowInfo(string sAttr, string sData, int &iCount)
 		printf("-");
 		printf("\n");
 	}
-	else if(sAttr == "\"updated_at\"")
-	{
+	else if(sAttr == "\"updated_at\""){
 		printf("Binary Package updated at:=> ");
 		printf(" %s\n", sData.c_str());
 	}
-	else if(sAttr == "\"browser_download_url\"")
-	{
+	else if(sAttr == "\"browser_download_url\""){
 		printf("Download Link:=> ");
 		sData = sData.substr(0, sData.size() - 2);
 		printf(" %s\n", sData.c_str());
