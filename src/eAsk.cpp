@@ -17,8 +17,7 @@ CurlCore *m_pCore;
 
 string sWelCome = "\nWelcome to github metadata fetcher "+ (string)CEASY_CURL+" !!\nIt's a very simple command line app who will try to\nfill your all want for github metadata(THE API).\n\n";
 
-int main(void)
-{
+int main(void){
 
   m_pCore = new CurlCore();
   string sAuthUri = "https://api.github.com/repos";
@@ -26,8 +25,7 @@ int main(void)
   string sRepo ;
   string sTTL = "";
   string sAgain="";
-  while(1)
-   {
+  while(1){
 		cout<<sWelCome<<endl;
 		cout <<"Please enter github username: ";
 		cin>>sUserName;
